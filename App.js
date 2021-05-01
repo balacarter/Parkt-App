@@ -1,13 +1,38 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import * as firebase from "firebase";
+import AuthNavigator from './Navigation/AuthNavigator';
+
+import { Provider } from "react-redux";
+import { createStore, applyMiddleware, combineReducers } from "redux";
+import thunk from "redux-thunk";
+import parking from './store/reducers/parkingReducer';
+
+const rootReducer = combineReducers({
+  parkingReducer: parking,
+})
+
+const store = createStore(rootReducer, applyMiddleware(thunk));
+
+var firebaseConfig = {
+  apiKey: "AIzaSyBNksQNvDSAkzhCkl_7RJDHIGm0gC0fay8",
+  authDomain: "parkt-ba251.firebaseapp.com",
+  databaseURL: "https://parkt-ba251-default-rtdb.firebaseio.com",
+  projectId: "parkt-ba251",
+  storageBucket: "parkt-ba251.appspot.com",
+  messagingSenderId: "971583400741",
+  appId: "1:971583400741:web:098f338a498eb8076f08cc"
+};
+
+firebase.initializeApp(firebaseConfig);
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Provider store={store} >
+      <AuthNavigator />
+    </Provider>
+    
   );
 }
 
