@@ -25,7 +25,7 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.login}>Login</Text>
+      <Text style={styles.login}>Login/Sign Up</Text>
 
       <TextInput
         style={styles.textInput}
