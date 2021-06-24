@@ -7,10 +7,10 @@ import AuthNavigator from './Navigation/AuthNavigator';
 import { Provider } from "react-redux";
 import { createStore, applyMiddleware, combineReducers } from "redux";
 import thunk from "redux-thunk";
-import parking from './store/reducers/parkingReducer';
+import parkingReducer from './store/reducers/parkingReducer';
 
 const rootReducer = combineReducers({
-  parkingReducer: parking,
+  parking: parkingReducer,
 })
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
@@ -26,6 +26,7 @@ var firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+var database = firebase.database();
 
 export default function App() {
   return (

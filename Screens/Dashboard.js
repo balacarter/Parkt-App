@@ -1,4 +1,4 @@
-import React, { useState, useEffect,} from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -9,73 +9,83 @@ import {
   KeyboardAvoidingView,
   Pressable,
 } from "react-native";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
 import Constants from "expo-constants";
 import * as Permissions from "expo-permissions";
 import * as Location from "expo-location";
 import Map from "../Components/Map";
-import {ADD_PARKING_SPOT} from "../store/actions/types";
+import { ADD_PARKING_SPOT } from "../store/actions/types";
+import { addParkingSpot, getParkingSpots } from "../store/actions/parking";
 
 const Dashboard = () => {
   const [curLocation, setLocation] = useState(null);
   const [needsParking, setNeedsParking] = useState(true);
-  const [parkingSpots, setParkingSpots] = useState([]);
+  //const [parkingSpots, setParkingSpots] = useState([]);
   const [searchText, onChangeSearchText] = useState("");
-  const [searchRadius, setSearchRadius] = useState();
+  //const [searchRadius, setSearchRadius] = useState();
   const [hasLocationPermissions, setLocationPermission] = useState(false);
   const [searchLocation, setSearchLocation] = useState(null);
 
   const dispatch = useDispatch();
+  const parkingSpots = useSelector(state => state.parking.parkingSpots);
+  const searchRadius = useSelector(state => state.parking.radius);
+  //console.log(parkingSpots);
 
-  const addParkingSpot = (location) => dispatch({type: ADD_PARKING_SPOT, location: location});
+  const getLocationAsync = async () => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if ("granted" !== status) {
+      setLocation("Permission to access location was denied");
+    } else {
+      setLocationPermission(true);
+    }
 
+    let location = await Location.getCurrentPositionAsync({});
 
+    setLocation(location);
+  };
   useEffect(() => {
-    const getLocationAsync = async () => {
-      let { status } = await Permissions.askAsync(Permissions.LOCATION);
-      if ("granted" !== status) {
-        setLocation("Permission to access location was denied");
-      } else {
-        setLocationPermission(true);
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      
-      setLocation(location);
-    };
-
     getLocationAsync();
+    dispatch(getParkingSpots());
   }, []);
 
   const parseRadius = (radius) => {
     let temp = parseInt(radius);
-    if(temp) {
+    if (temp) {
       setSearchRadius(temp);
     }
-  }; 
+  };
   const toggleSwitch = () => {
     setNeedsParking(!needsParking);
   };
 
   const sendParkingSpot = async () => {
     let location = await Location.getCurrentPositionAsync({});
-    addParkingSpot(location);
+    let key = Math.floor(Math.random() * Date.now());
+    const parkingSpot = {
+      key: key,
+      coordinates: {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      },
+      
+    };
+    dispatch(addParkingSpot(parkingSpot));
   };
 
   const findParking = async () => {
     //Find parking spots in radius
-    if(needsParking && hasLocationPermissions) {
+    if (needsParking && hasLocationPermissions) {
       let location;
-      if(searchText) {
-        console.log(searchText);
+      if (searchText) {
+        //console.log(searchText);
         location = await Location.geocodeAsync(searchText);
-      }
-      else {
+      } else {
         location = await Location.getCurrentPositionAsync({});
       }
       setSearchLocation(location[0]);
+      //setParkingSpots(selector(state => state.parkingSpots));
+      //console.log(parkingSpots);
     }
-    
   };
 
   const ToggleArea = () => {
@@ -104,7 +114,6 @@ const Dashboard = () => {
             <View style={styles.searchArea}>
               <View style={styles.inputLabel}>
                 <Text style={styles.text}>Address:</Text>
-                <Text style={styles.text}>Radius:</Text>
               </View>
               <View style={styles.searchInputs}>
                 <View style={styles.addressInput}>
@@ -117,16 +126,6 @@ const Dashboard = () => {
                     />
                   </View>
                 </View>
-                <View style={styles.radiusInput}>
-                  <View style={styles.inputBox}>
-                    <TextInput
-                      styles={styles.textInput}
-                      onChangeText={parseRadius}
-                      value={searchRadius}
-                      placeholder="Radius"
-                    />
-                  </View>
-                </View>
               </View>
 
               <Pressable style={styles.button} onPress={findParking}>
@@ -136,7 +135,7 @@ const Dashboard = () => {
           ) : (
             <View style={styles.addArea}>
               <Pressable style={styles.button} onPress={sendParkingSpot}>
-                <Text>Add ParkingSpot</Text>
+                <Text style={styles.buttonText}>Add ParkingSpot</Text>
               </Pressable>
             </View>
           )}
@@ -161,10 +160,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: Constants.statusBarHeight,
+    backgroundColor: "#33bdb4",
   },
   head: {
     flex: 1,
     flexDirection: "column",
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
   body: {
     flex: 4,
@@ -173,7 +175,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     width: "100%",
-    borderBottomWidth: 1,
   },
   inputArea: {
     flex: 1,
@@ -183,10 +184,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   addressInput: {
-    flex: 4,
+    flex: 1,
   },
   radiusInput: {
     flex: 1,
+  },
+  button: {
+
+    borderRadius: 10,
+    backgroundColor: "#4287f5",
+    alignItems: "center",
+    width: "60%",
+    alignSelf: "center",
+    padding: 5,
+    marginTop: 9,
+    
+  },
+  buttonText: {
+    color: "#FFFF",
   },
   addArea: {
     flexDirection: "row",
@@ -195,10 +210,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   textInput: {},
-  text: {},
+  text: {
+    color: "#FFFF",
+    fontWeight: "500",
+  },
   inputLabel: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     margin: 5,
     marginRight: 10,
   },

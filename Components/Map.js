@@ -8,7 +8,8 @@ const Map = (props) => {
   const hasLocationPermissions = props.hasLocationPermissions;
   const needsParking = props.needsParking;
   const searchRadius = props.searchRadius;
-
+  const parkingSpots = props.parkingSpots;
+  console.log(parkingSpots);
 
   if (curLocation === null) {
     return <Text>Finding your current location...</Text>;
@@ -28,14 +29,21 @@ const Map = (props) => {
         longitudeDelta: 0.01,
       }}
     >
-      <MapView.Marker coordinate={{latitude: curLocation.latitude, longitude: curLocation.longitude}} />
+      <MapView.Marker
+        coordinate={{latitude: curLocation.latitude, longitude: curLocation.longitude}}
+      />
+      {needsParking && parkingSpots ? Object.values(parkingSpots).map(marker => (
+        <MapView.Marker
+          coordinate={marker.coordinates}
+        />
+      )) : null}
       {needsParking ? (
         <MapView.Circle
           center={{
             latitude: curLocation.latitude,
             longitude: curLocation.longitude,
           }}
-          radius={500}
+          radius={searchRadius}
           strokeWidth={2}
           strokeColor="#3399ff"
           fillColor="rgba(109, 195, 252, 0.4)"
