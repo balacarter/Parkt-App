@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import * as firebase from "firebase";
 
-export default function Login() {
+export default function Login({navigation}) {
   // TODO: add firebase login function later
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +21,7 @@ export default function Login() {
       .auth()
       .signInWithEmailAndPassword(email, password)
       .catch(setErrorMessage);
+    console.log(errorMessage);
   };
 
   return (
@@ -50,7 +51,7 @@ export default function Login() {
       </Pressable>
       <Pressable
         style={styles.button}
-        onPress={handleLogin}
+        onPress={() => navigation.navigate("SignUp")}
       >
         <Text style={styles.buttonText}>Sign Up</Text>
       </Pressable>

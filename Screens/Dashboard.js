@@ -32,7 +32,7 @@ const Dashboard = () => {
   //console.log(parkingSpots);
 
   const getLocationAsync = async () => {
-    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    let { status } = await Location.requestForegroundPermissionsAsync();
     if ("granted" !== status) {
       setLocation("Permission to access location was denied");
     } else {
